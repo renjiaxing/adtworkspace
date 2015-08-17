@@ -1,0 +1,175 @@
+package com.rjx.gogu02.adapter;
+
+import java.util.ArrayList;
+
+import org.apache.http.Header;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.Toast;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+import com.rjx.gogu02.R;
+import com.rjx.gogu02.domain.Stock;
+import com.rjx.gogu02.utils.ConstantValue;
+
+public class MyStockAdapter extends BaseAdapter {
+
+	private Context context = null;
+	private ArrayList<Stock> stockList = new ArrayList<Stock>();
+	private String user_id;
+	private String token;
+	private Boolean checked;
+
+	public MyStockAdapter(Context context, ArrayList<Stock> stockList,
+			String user_id, String token,Boolean checked) {
+		this.context = context;
+		this.stockList = stockList;
+		this.user_id = user_id;
+		this.token = token;
+		this.checked=checked;
+	}
+
+	@Override
+	public int getCount() {
+		return stockList.size();
+	}
+
+	@Override
+	public Object getItem(int position) {
+		return stockList.get(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		return position;
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		LinearLayout ll = null;
+		if (convertView != null) {
+			ll = (LinearLayout) convertView;
+		} else {
+			ll = (LinearLayout) LayoutInflater.from(context).inflate(
+					R.layout.mystock_item_cell, null);
+		}
+		TextView stock_name = (TextView) ll.findViewById(R.id.my_stock_name);
+		final Stock tmp = (Stock) getItem(position);
+		stock_name.setText(tmp.getStock_name());
+
+		final CheckBox checkBox = (CheckBox) ll
+				.findViewById(R.id.my_stock_checkbox);
+		if(checked || tmp.getFollow().equals("true")){
+			checkBox.setChecked(true);
+		}else {
+			checkBox.setChecked(false);
+		}
+		
+
+		checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView,
+					boolean isChecked) {
+
+				AsyncHttpClient httpClient = new AsyncHttpClient();
+
+				RequestParams params = new RequestParams();
+				params.put("uid", user_id);
+				params.put("token", token);
+				params.put("sid", tmp.getStock_id());
+
+				httpClient.setTimeout(3000);
+
+				if (isChecked) {
+					httpClient.post(ConstantValue.ADDSTOCK_URL, params,
+							new JsonHttpResponseHandler() {
+
+								@Override
+								public void onSuccess(int statusCode,
+										Header[] headers, JSONObject response) {
+									try {
+										if (response.getString("result")
+												.equals("ok")) {
+										} else {
+											showInfo("关注失败，请稍后再试~");
+										}
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+									super.onSuccess(statusCode, headers,
+											response);
+								}
+
+								@Override
+								public void onFailure(int statusCode,
+										Header[] headers,
+										String responseString,
+										Throwable throwable) {
+									showInfo("网络错误，请稍后再试~");
+									super.onFailure(statusCode, headers,
+											responseString, throwable);
+								}
+							});
+
+				} else {
+					httpClient.post(ConstantValue.DELSTOCK_URL, params,
+							new JsonHttpResponseHandler() {
+
+								@Override
+								public void onSuccess(int statusCode,
+										Header[] headers, JSONObject response) {
+									try {
+										if (response.getString("result")
+												.equals("ok")) {
+										} else {
+											showInfo("取消关注失败，请稍后再试~");
+										}
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+									super.onSuccess(statusCode, headers,
+											response);
+								}
+
+								@Override
+								public void onFailure(int statusCode,
+										Header[] headers,
+										String responseString,
+										Throwable throwable) {
+									showInfo("网络错误，请稍后再试~");
+									super.onFailure(statusCode, headers,
+											responseString, throwable);
+								}
+							});
+				}
+			}
+		});
+
+		return ll;
+	}
+
+	public void showInfo(String info) {
+
+		Toast.makeText(context.getApplicationContext(), info,
+				Toast.LENGTH_SHORT).show();
+	}
+}

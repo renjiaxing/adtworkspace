@@ -1,0 +1,254 @@
+package com.rjx.gogu02;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.rjx.gogu02.R.id;
+
+public class MainActivity extends ActionBarActivity {
+
+	private ArrayList<Micropost> mListItems;
+	private PullToRefreshListView mListView;
+	// private ArrayAdapter<String> mAdapter;
+	private MicropostsAdapter mAdapter;
+	private HttpClient client;
+	private String value = "";
+	private String min = "";
+	private String max = "";
+	private SharedPreferences sp;
+	private String user_id = "";
+	private String token = "";
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+
+		sp = getSharedPreferences("login", MODE_PRIVATE);
+		user_id = sp.getString("user_id", "");
+		token = sp.getString("token", "");
+
+		client = new DefaultHttpClient();
+		mListItems = new ArrayList<Micropost>();
+		mListView = (PullToRefreshListView) findViewById(R.id.list_view);
+		mAdapter = new MicropostsAdapter(this, mListItems);
+		mListView.setAdapter(mAdapter);
+
+		readNet("http://192.168.110.128/microposts_json", 0);
+		System.out.println("bbb");
+		System.out.println(mListItems);
+
+		// 设置ListView
+
+		// 设置PullToRefresh
+		mListView.setMode(Mode.BOTH);
+		mListView.setOnRefreshListener(new OnRefreshListener2<ListView>() {
+
+			// 下拉Pulling Down
+			@Override
+			public void onPullDownToRefresh(
+					PullToRefreshBase<ListView> refreshView) {
+				readNet("http://192.168.110.128/up_microposts_json?up=" + max,
+						1);
+			}
+
+			// 上拉Pulling Up
+			@Override
+			public void onPullUpToRefresh(
+					PullToRefreshBase<ListView> refreshView) {
+
+				readNet("http://192.168.110.128/down_microposts_json?down="
+						+ min, 2);
+			}
+
+		});
+
+		mListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				TextView id_tv = (TextView) view.findViewById(R.id.id_text);
+				String id_st = id_tv.getText().toString();
+				Bundle data = new Bundle();
+				data.putString("mid", id_st);
+				Intent it2 = new Intent(MainActivity.this,
+						DetailsMicropostAty.class);
+				it2.putExtras(data);
+				startActivity(it2);
+			}
+		});
+
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case id.menu_msg:
+			Intent it = new Intent(MainActivity.this, NewMicropostAty.class);
+			startActivity(it);
+			finish();
+			break;
+
+		case id.menu_logout:
+			Editor et = sp.edit();
+			et.clear();
+			et.commit();
+			Intent it2 = new Intent(MainActivity.this, LoginAty.class);
+			startActivity(it2);
+			finish();
+
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	public void readNet(String url, Integer mod) {
+		new AsyncTask<Object, Void, Integer>() {
+
+			@Override
+			protected Integer doInBackground(Object... params) {
+
+				String urlString = (String) params[0];
+				Integer mod = (Integer) params[1];
+
+				HttpGet get = new HttpGet(urlString);
+
+				Message msg = new Message();
+				msg.what = mod;
+
+				try {
+					HttpResponse response = client.execute(get);
+					value = EntityUtils.toString(response.getEntity());
+
+					handler.sendMessage(msg);
+
+				} catch (ClientProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				return mod;
+
+			}
+
+			protected void onPostExecute(Integer mod) {
+				if (mod == 1 || mod == 2) {
+					mListView.onRefreshComplete();
+				}
+			};
+		}.execute(url, mod);
+
+	}
+
+	Handler handler = new Handler() {
+
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 0:
+				try {
+					JSONArray arr = new JSONArray(value.toString());
+
+					max = arr.getJSONObject(0).getString("id");
+					min = arr.getJSONObject(arr.length() - 1).getString("id");
+
+					for (int i = 0; i < arr.length(); i++) {
+						JSONObject obj = arr.getJSONObject(i);
+						Micropost tmp = new Micropost(obj.getString("id"),
+								obj.getString("content"),
+								obj.getString("user_id"),
+								obj.getString("stock_id"));
+						mListItems.add(tmp);
+					}
+					mAdapter.notifyDataSetChanged();
+
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				break;
+			case 1:
+				try {
+					JSONArray arr = new JSONArray(value.toString());
+
+					max = arr.getJSONObject(0).getString("id");
+
+					for (int i = 0; i < arr.length(); i++) {
+						JSONObject obj = arr.getJSONObject(i);
+						Micropost tmp = new Micropost(obj.getString("id"),
+								obj.getString("content"),
+								obj.getString("user_id"),
+								obj.getString("stock_id"));
+						mListItems.add(0, tmp);
+					}
+					mAdapter.notifyDataSetChanged();
+
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				break;
+			case 2:
+				try {
+					JSONArray arr = new JSONArray(value.toString());
+
+					min = arr.getJSONObject(arr.length() - 1).getString("id");
+
+					for (int i = 0; i < arr.length(); i++) {
+						JSONObject obj = arr.getJSONObject(i);
+						Micropost tmp = new Micropost(obj.getString("id"),
+								obj.getString("content"),
+								obj.getString("user_id"),
+								obj.getString("stock_id"));
+						mListItems.add(tmp);
+					}
+					mAdapter.notifyDataSetChanged();
+
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				break;
+
+			}
+		};
+	};
+}

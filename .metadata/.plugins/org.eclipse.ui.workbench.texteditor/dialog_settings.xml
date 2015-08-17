@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item value="false" key="isRegEx"/>
+		<item value="stock_json" key="selection"/>
+		<item value="true" key="casesensitive"/>
+		<item value="false" key="incremental"/>
+		<item value="true" key="wrap"/>
+		<item value="false" key="wholeword"/>
+		<list key="findhistory">
+			<item value="stock_json"/>
+			<item value="json"/>
+			<item value="CheckBox"/>
+			<item value="menu"/>
+			<item value="ic_action_more_notice"/>
+			<item value="update"/>
+			<item value="microposta"/>
+			<item value="micropostA"/>
+		</list>
+		<list key="replacehistory">
+			<item value="serUrl+&quot;"/>
+			<item value="SerUrl"/>
+			<item value="192.168.110.128"/>
+			<item value="192.168."/>
+			<item value="sp = getSharedPreferences(&quot;login&quot;, MODE_PRIVATE);"/>
+			<item value="sp = getSharedPreferences(&quot;login1&quot;, MODE_PRIVATE);"/>
+			<item value="121.41.25.221"/>
+			<item value=""/>
+		</list>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item value="273" key="DIALOG_WIDTH"/>
+		<item value="1|Microsoft YaHei UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Microsoft YaHei UI" key="DIALOG_FONT_NAME"/>
+		<item value="394" key="DIALOG_HEIGHT"/>
+		<item value="1046" key="DIALOG_X_ORIGIN"/>
+		<item value="75" key="DIALOG_Y_ORIGIN"/>
+	</section>
+</section>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Android-PullToRefresh-master/Android-PullToRefresh-master.iml" filepath="$PROJECT_DIR$/Android-PullToRefresh-master/Android-PullToRefresh-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/BadgeView/BadgeView.iml" filepath="$PROJECT_DIR$/BadgeView/BadgeView.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Android-PullToRefresh-master/extras/PullToRefreshListFragment/PullToRefreshListFragment.iml" filepath="$PROJECT_DIR$/Android-PullToRefresh-master/extras/PullToRefreshListFragment/PullToRefreshListFragment.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Android-PullToRefresh-master/extras/PullToRefreshViewPager/PullToRefreshViewPager.iml" filepath="$PROJECT_DIR$/Android-PullToRefresh-master/extras/PullToRefreshViewPager/PullToRefreshViewPager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ViewPagerIndicator-master/ViewPagerIndicator-master.iml" filepath="$PROJECT_DIR$/ViewPagerIndicator-master/ViewPagerIndicator-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/adtworkspace.iml" filepath="$PROJECT_DIR$/adtworkspace.iml" />
+      <module fileurl="file://$PROJECT_DIR$/appcompat_v7/appcompat_v7.iml" filepath="$PROJECT_DIR$/appcompat_v7/appcompat_v7.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Android-PullToRefresh-master/extras/extras.iml" filepath="$PROJECT_DIR$/Android-PullToRefresh-master/extras/extras.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gogu02/gogu02.iml" filepath="$PROJECT_DIR$/gogu02/gogu02.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Android-PullToRefresh-master/library/library.iml" filepath="$PROJECT_DIR$/Android-PullToRefresh-master/library/library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ViewPagerIndicator-master/librarys/librarys.iml" filepath="$PROJECT_DIR$/ViewPagerIndicator-master/librarys/librarys.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Android-PullToRefresh-master/sample/sample.iml" filepath="$PROJECT_DIR$/Android-PullToRefresh-master/sample/sample.iml" />
+    </modules>
+  </component>
+</project>

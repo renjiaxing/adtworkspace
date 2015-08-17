@@ -1,0 +1,192 @@
+package com.rjx.gogu01;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
+
+
+public class MainActivity extends ActionBarActivity {
+		
+		private ArrayList<String> mListItems;
+	    private PullToRefreshListView mListView;
+	    private ArrayAdapter<String> mAdapter;
+	    HttpClient client;
+	    String value="";
+		
+	    @Override
+	    protected void onCreate(Bundle savedInstanceState) {
+	        super.onCreate(savedInstanceState);
+	        setContentView(R.layout.activity_main);	
+	        
+			client=new DefaultHttpClient();
+	        mListItems = new ArrayList<String>();
+	        
+	        value=readNet("http://192.168.0.110/microposts_json");
+	        System.out.println("bbb");
+			System.out.println(value);
+	        
+	        // 设置初期数据
+
+	       
+//	        mListItems = new ArrayList<String>();
+//	        mListItems.add("aaa");
+
+	        // 设置ListView
+	        mListView = (PullToRefreshListView) findViewById(R.id.list_view);
+	        mAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, mListItems);
+	        mListView.setAdapter(mAdapter);
+	        
+	        // 设置PullToRefresh
+	        mListView.setMode(Mode.BOTH);
+	        mListView.setOnRefreshListener(new OnRefreshListener2<ListView>(){
+	 
+	        	// 下拉Pulling Down
+	            @Override
+	            public void onPullDownToRefresh(PullToRefreshBase<ListView> refreshView) {
+	            	// 下拉的时候数据重置
+//	                mListItems = new ArrayList<String>();
+//	            	for (int i = 1; i <= 10; i++) {
+//	            		mListItems.add("Item " + Integer.toString(i));
+//	            	}
+//	            	mAdapter.notifyDataSetChanged();
+	            	
+	                new UpFinishRefresh().execute();
+	            }
+	            
+	            // 上拉Pulling Up
+	            @Override
+	            public void onPullUpToRefresh(PullToRefreshBase<ListView> refreshView) {
+	            	// 上拉的时候添加选项
+	                int count = mListItems.size();
+	                mListItems.add("Item " + Integer.toString(++count));
+	                mAdapter.notifyDataSetChanged();
+	                
+	                new DownFinishRefresh().execute();
+	            }
+	 
+	        });
+	        
+	    }
+	    
+	    private class SampleListAdapter extends BaseAdapter {
+	    	 
+	        @Override
+	        public int getCount() {
+	            return mListItems.size();
+	        }
+	 
+	        @Override
+	        public Object getItem(int index) {
+	            return mListItems.get(index);
+	        }
+	 
+	        @Override
+	        public long getItemId(int index) {
+	            return index;
+	        }
+	 
+	        @Override
+	        public View getView(int index, View view, ViewGroup arg2) {
+	            if(view == null){
+	                LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	                view = inflater.inflate(R.layout.activity_main, null);
+	            }
+	            TextView textView = (TextView)view.findViewById(R.id.text);
+	            textView.setText(mListItems.get(index));
+	            return view;
+	        }
+	    }
+	 
+	    private class UpFinishRefresh extends AsyncTask<Void, Void, Void>{
+	        @Override
+	        protected Void doInBackground(Void... params) {
+	        	mListItems.add("aaa");
+	            return null;
+	        }
+	 
+	        @Override
+	        protected void onPostExecute(Void result){
+	            mListView.onRefreshComplete();
+	        }
+	    }
+	    
+	    private class DownFinishRefresh extends AsyncTask<Void, Void, Void>{
+	        @Override
+	        protected Void doInBackground(Void... params) {
+	        	mListItems.add("bbb");
+	            return null;
+	        }
+	 
+	        @Override
+	        protected void onPostExecute(Void result){
+	            mListView.onRefreshComplete();
+	        }
+	    }
+	    
+	    private void readNet(String url) {
+			new AsyncTask<String, Void, Void>(){
+
+				@Override
+				protected Void doInBackground(String... params) {
+					
+					String urlString=params[0];
+
+					HttpGet get=new HttpGet(urlString);
+					
+					try {
+						HttpResponse response=client.execute(get);
+						value=EntityUtils.toString(response.getEntity());
+
+						JSONArray arr;
+						try {
+							arr = new JSONArray(value.toString());
+							for (int i = 0; i < arr.length(); i++) {
+					    		JSONObject obj=arr.getJSONObject(i);
+					    		mListItems.add( obj.getString("content"));
+					    	}
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}						
+				    	
+					} catch (ClientProtocolException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					
+					return null;
+				}
+				
+			}.execute(url);
+
+		}
+	
+
+}
